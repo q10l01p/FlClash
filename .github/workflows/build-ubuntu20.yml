@@ -6,11 +6,25 @@ on:
 jobs:
   build_linux_ubuntu20:
     runs-on: [self-hosted, ubuntu20]
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           submodules: recursive
+
+      - name: Install build deps (Ubuntu 20.04)
+        run: |
+          set -eux
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            ca-certificates curl git unzip xz-utils zip \
+            cmake ninja-build pkg-config clang \
+            libgtk-3-dev liblzma-dev \
+            libayatana-appindicator3-dev libkeybinder-3.0-dev
+          cmake --version
+          ninja --version
+          pkg-config --version
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -24,11 +38,14 @@ jobs:
           cache: true
 
       - name: Flutter pub get
-        run: flutter pub get
+        run: |
+          set -eux
+          flutter --version
+          flutter pub get
 
       - name: Build linux amd64
         run: |
-          flutter --version
+          set -eux
           dart ./setup.dart linux --arch amd64
 
       - name: Upload artifact
